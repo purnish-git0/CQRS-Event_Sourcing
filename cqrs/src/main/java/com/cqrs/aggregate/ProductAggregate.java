@@ -21,9 +21,6 @@ import java.util.Set;
 @Component
 public class ProductAggregate {
 
-    private ProductReadRepository productReadRepository;
-
-    private CategoryReadRepository categoryReadRepository;
 
     ProductEventStoreRepository productEventStoreRepository;
 
@@ -33,8 +30,6 @@ public class ProductAggregate {
                             CategoryReadRepository categoryReadRepository,
                             ProductEventStoreRepository productEventStoreRepository,
                             ProductUtil productUtil) {
-        this.productReadRepository =productReadRepository;
-        this.categoryReadRepository = categoryReadRepository;
         this.productEventStoreRepository = productEventStoreRepository;
         this.productUtil = productUtil;
     }
