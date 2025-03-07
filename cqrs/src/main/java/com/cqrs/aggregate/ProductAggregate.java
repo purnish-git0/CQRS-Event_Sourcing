@@ -11,6 +11,11 @@ import com.cqrs.repository.read.CategoryReadRepository;
 import com.cqrs.repository.read.ProductReadRepository;
 import com.cqrs.repository.write.ProductEventStoreRepository;
 import com.cqrs.util.ProductUtil;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -26,15 +31,19 @@ public class ProductAggregate {
 
     private ProductUtil productUtil;
 
+    private MongoTemplate writeMongoTemplate;
+
     public ProductAggregate(ProductReadRepository productReadRepository,
                             CategoryReadRepository categoryReadRepository,
                             ProductEventStoreRepository productEventStoreRepository,
-                            ProductUtil productUtil) {
+                            ProductUtil productUtil,
+                            @Qualifier("writeMongoTemplate") MongoTemplate writeTemplate) {
         this.productEventStoreRepository = productEventStoreRepository;
         this.productUtil = productUtil;
+        this.writeMongoTemplate = writeTemplate;
     }
 
-    public ProductDocument handleCreateProduct(CreateProductCommand createProductCommand) {
+    public List<Event> handleCreateProduct(CreateProductCommand createProductCommand) {
 
         List<Event> events = new ArrayList<>();
 
@@ -56,11 +65,19 @@ public class ProductAggregate {
                 .events(events)
                 .build();
 
+        Update update = new Update();
 
-        productEventStoreRepository.save(productEventStore);
+        update.push("events").each(events);
+
+        Query query = new Query();
+
+        query.addCriteria(Criteria.where("productId").is(createProductCommand.getProductId()));
 
 
-        return null;
+        writeMongoTemplate.updateFirst(query, update, ProductEventStore.class);
+
+
+        return events;
     }
 
     public List<Event> handleUpdateProduct(UpdateProductCommand updateProductCommand) {
@@ -102,11 +119,17 @@ public class ProductAggregate {
                 });
 
 
-        productEventStore.getEvents().addAll(events);
+        Update update = new Update();
+
+        update.push("events").each(events);
+
+        Query query = new Query();
+
+        query.addCriteria(Criteria.where("productId").is(updateProductCommand.getId()));
 
 
-        productEventStoreRepository.save(productEventStore);
+        writeMongoTemplate.updateFirst(query, update, ProductEventStore.class);
 
-        return productEventStore.getEvents();
+        return events;
     }
 }

@@ -5,8 +5,15 @@ import com.cqrs.event.Event;
 import com.cqrs.event.ProductAddedToCategoryEvent;
 import com.cqrs.event.ProductRemovedFromCategoryEvent;
 import com.cqrs.event.ProductRemovedFromOrderEvent;
+import com.cqrs.repository.read.CategoryReadRepository;
 import com.cqrs.repository.write.ProductEventStoreRepository;
 import com.cqrs.repository.read.ProductReadRepository;
+import com.cqrs.snapshot.ProductSnapshot;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -20,8 +27,14 @@ public class ProductUtil {
 
     private ProductReadRepository productReadRepository;
 
-    public ProductUtil(ProductEventStoreRepository productEventStoreRepository){
+    private MongoTemplate readMongoTemplate;
+
+
+
+    public ProductUtil(ProductEventStoreRepository productEventStoreRepository
+                    , @Qualifier("readMongoTemplate") MongoTemplate readTemplate){
         this.productEventStoreRepository = productEventStoreRepository;
+        this.readMongoTemplate = readTemplate;
     }
 
     public Set<Integer> recreateProductCategoriesFromEventStore(Integer productId,
@@ -65,6 +78,48 @@ public class ProductUtil {
         }
 
         return null;
+    }
+
+    public ProductSnapshot createSnapshot(Integer productId,
+                                          List<Event> events) {
+
+
+        Query query = new Query();
+
+        query.addCriteria(Criteria.where("productId").is(productId));
+
+
+        ProductSnapshot previousSnapshot = readMongoTemplate.findOne(query, ProductSnapshot.class);
+
+        Set<Integer> categorySetOfProduct = new HashSet<>();
+
+        for(Event event: events) {
+            if(event instanceof ProductAddedToCategoryEvent) {
+                if(((ProductAddedToCategoryEvent) event).getProductId().equals(previousSnapshot.getProductId())) {
+                    categorySetOfProduct.add(((ProductAddedToCategoryEvent) event).getCategoryId());
+                }
+            }
+            if(event instanceof ProductRemovedFromCategoryEvent) {
+                if (((ProductRemovedFromCategoryEvent) event).getProductId().equals(previousSnapshot.getProductId())) {
+                    categorySetOfProduct.remove(((ProductRemovedFromCategoryEvent) event).getCategoryId());
+                }
+            }
+        }
+
+        Update update = new Update();
+        update.set("categorySet", categorySetOfProduct);
+
+
+
+        readMongoTemplate.updateFirst(query, update, ProductSnapshot.class);
+
+        Query querySnapshot = new Query();
+
+        querySnapshot.addCriteria(Criteria.where("productId").is(productId));
+
+        return readMongoTemplate.findOne(query, ProductSnapshot.class);
+
+
     }
 
 }

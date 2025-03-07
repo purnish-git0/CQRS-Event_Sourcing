@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,16 +28,20 @@ public class ProductProjector {
     }
 
     public project(Integer productId, List<Event> events) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("productId").is(productId));
+
+        ProductDocument productDocument = readMongoTemplate.findOne(query, ProductDocument.class);
+
         for(Event event: events) {
 
         }
     }
 
-    private void apply(Integer productId, ProductAddedToCategoryEvent productAddedToCategoryEvent) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("productId").is(productId));
-        List<ProductDocument> productDocuments =
-        ProductDocument productDocument =
+    private void apply(ProductDocument productDocument, ProductAddedToCategoryEvent productAddedToCategoryEvent) {
+
+
+
     }
 
     private void apply(Integer productId, ProductRemovedFromCategoryEvent productRemovedFromCategoryEvent) {
