@@ -11,7 +11,7 @@ public class AfterEventSaveCallback implements AfterSaveCallback<Event> {
     @Override
     public Event onAfterSave(Event event, Document document, String collection) {
         if(event instanceof ProductAddedToCategoryEvent) {
-            if()
+//            if()
         }
         return null;
     }
