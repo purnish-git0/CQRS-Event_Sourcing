@@ -27,7 +27,7 @@ public class ProductProjector {
         this.readMongoTemplate = readTemplate;
     }
 
-    public project(Integer productId, List<Event> events) {
+    public void project(Integer productId, List<Event> events) {
         Query query = new Query();
         query.addCriteria(Criteria.where("productId").is(productId));
 

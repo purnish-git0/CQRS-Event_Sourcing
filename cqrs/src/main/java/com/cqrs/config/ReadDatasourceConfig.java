@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @Configuration
 @EnableMongoRepositories(basePackages =
-        "com.example.demo.repository.read",
+        "com.cqrs.repository.read",
         mongoTemplateRef = "readMongoTemplate")
 public class ReadDatasourceConfig {
 

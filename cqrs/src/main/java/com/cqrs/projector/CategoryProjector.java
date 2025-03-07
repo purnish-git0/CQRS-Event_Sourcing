@@ -15,7 +15,9 @@ public class CategoryProjector {
 
     private CategoryReadRepository categoryReadRepository;
 
-    private MongoTemplate
+    private MongoTemplate mongoTemplate;
+
+
     public CategoryProjector(CategoryReadRepository categoryReadRepository) {
         this.categoryReadRepository = categoryReadRepository;
     }

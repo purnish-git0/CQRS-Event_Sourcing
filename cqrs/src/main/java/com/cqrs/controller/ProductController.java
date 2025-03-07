@@ -27,8 +27,8 @@ public class ProductController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<List<ProductDocument>> createProduct(@RequestBody Set<ProductDTO> productDTOs) {
-        List<ProductDocument> retVal = new ArrayList<>();
+    public ResponseEntity<List<Event>> createProduct(@RequestBody Set<ProductDTO> productDTOs) {
+        List<Event> retVal = new ArrayList<>();
         productDTOs.forEach(productDTO -> {
             CreateProductCommand command = CreateProductCommand.builder()
                     .name(productDTO.getName())
@@ -36,7 +36,7 @@ public class ProductController {
                     .categoryIds(productDTO.getCategoryIds())
                     .build();
 
-            retVal.add(productAggregate.handleCreateProduct(command));
+            retVal.addAll(productAggregate.handleCreateProduct(command));
         });
 
 
