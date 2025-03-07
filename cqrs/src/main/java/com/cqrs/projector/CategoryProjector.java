@@ -34,7 +34,7 @@ public class CategoryProjector {
     }
 
     private void apply(Integer categoryId, ProductAddedToCategoryEvent event) {
-        CategoryDocument categoryDocument = categoryReadRepository.fin
+//        CategoryDocument categoryDocument = categoryReadRepository.fin
     }
 
     private void apply(Integer categoryId, ProductRemovedFromCategoryEvent event) {
